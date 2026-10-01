@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101b26">
+<title>Eldoria — RPG de Aventura</title>
+<style>
+:root{--ink:#eaf4ff;--muted:#a8bdce;--panel:rgba(9,20,31,.88);--line:rgba(169,209,235,.28);--gold:#ffd166;--blue:#54c7ff;--green:#6ee7a8;--red:#ff647c}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#0b1420;color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}body{min-height:100dvh;overflow:hidden}button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+#game{position:relative;isolation:isolate;height:100dvh;min-height:540px;overflow:hidden;background:#1c3841}
+.world{position:absolute;inset:0 0 116px;overflow:hidden;background:linear-gradient(#6fc5ed 0%,#b8e8f3 40%,#7fae64 40%,#315e40 100%)}
+.sun{position:absolute;top:8%;right:18%;width:clamp(48px,8vw,100px);aspect-ratio:1;border-radius:50%;background:#fff1b5;box-shadow:0 0 70px #ffe7a2aa}
+.mountain{position:absolute;bottom:28%;width:0;height:0;border-left:20vw solid transparent;border-right:20vw solid transparent;border-bottom:38vh solid #598c91;filter:drop-shadow(0 9px 0 #467578)}
+.mountain.one{left:-8%;border-bottom-color:#568d91}.mountain.two{left:25%;border-left-width:25vw;border-right-width:25vw;border-bottom-width:48vh;border-bottom-color:#78aeb0}.mountain.three{right:-15%;border-bottom-color:#47777e}
+.castle{position:absolute;right:13%;bottom:39%;width:clamp(100px,18vw,240px);height:clamp(90px,17vh,190px);opacity:.92;filter:drop-shadow(0 8px 3px #163c3b66)}
+.castle .keep{position:absolute;bottom:0;left:25%;width:50%;height:70%;background:#e9d8b6;border:3px solid #8e9e9a}
+.castle .tower{position:absolute;bottom:0;width:22%;height:100%;background:#f4dfb9;border:3px solid #8e9e9a}
+.castle .tower:before{content:"";position:absolute;top:-23%;left:-12%;width:110%;height:28%;background:#536d80;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.castle .t1{left:7%}.castle .t2{right:7%;height:85%}.castle .roof{position:absolute;top:4%;left:35%;width:30%;height:36%;background:#587a91;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.treeline{position:absolute;left:-5%;right:-5%;bottom:21%;height:25%;background:linear-gradient(transparent,#244b39 70%);clip-path:polygon(0 70%,4% 35%,8% 70%,13% 8%,17% 70%,23% 20%,28% 76%,34% 15%,39% 70%,45% 32%,50% 72%,57% 4%,62% 73%,68% 28%,73% 73%,80% 8%,85% 68%,92% 20%,96% 70%,100% 30%,100% 100%,0 100%)}
+.river{position:absolute;right:14%;bottom:0;width:25%;height:49%;background:linear-gradient(110deg,#236c85,#55c7db 45%,#19728d);clip-path:polygon(40% 0,100% 0,85% 22%,100% 42%,64% 63%,80% 100%,0 100%,26% 72%,8% 49%,28% 28%);opacity:.9}
+.path{position:absolute;bottom:-5%;left:14%;width:55%;height:67%;background:linear-gradient(100deg,#b79b66,#e0c48a 45%,#b59a68);clip-path:polygon(40% 0,62% 0,55% 23%,75% 43%,100% 100%,0 100%,23% 55%,37% 31%);filter:drop-shadow(0 -3px 2px #25472e)}
+.path:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(165deg,transparent 0 34px,#967c52aa 35px 38px,transparent 39px 75px);opacity:.65}
+.bridge{position:absolute;right:23%;bottom:22%;width:24%;height:30px;background:#76533b;border:5px solid #4e392c;border-radius:5px;transform:rotate(-2deg);box-shadow:0 9px 0 #4e392c}
+.bridge:before,.bridge:after{content:"";position:absolute;left:0;right:0;height:7px;background:#b78a5b;border:2px solid #4e392c}.bridge:before{top:-16px}.bridge:after{bottom:-16px}
+.tree{position:absolute;bottom:23%;width:clamp(65px,10vw,130px);height:clamp(110px,21vh,220px);z-index:1}
+.tree:before{content:"";position:absolute;bottom:0;left:43%;width:17%;height:55%;background:#62472f;border-radius:8px}
+.tree:after{content:"";position:absolute;left:0;top:0;width:100%;height:72%;background:#245b3e;clip-path:polygon(50% 0,83% 20%,100% 47%,77% 50%,92% 78%,59% 70%,50% 100%,37% 70%,6% 79%,23% 50%,0 44%,23% 20%);filter:drop-shadow(0 0 8px #102d24)}
+.tree.t1{left:2%;transform:scale(1.25)}.tree.t2{left:18%;bottom:27%;transform:scale(.85)}.tree.t3{right:0;transform:scale(1.3)}.tree.t4{right:26%;bottom:32%;transform:scale(.65)}
+.hut{position:absolute;left:5%;bottom:29%;width:clamp(90px,16vw,190px);height:clamp(65px,12vh,125px);background:#8e6844;border:4px solid #533c2a;z-index:2;box-shadow:inset 0 0 0 5px #bd9564}
+.hut:before{content:"";position:absolute;left:-12%;top:-43%;width:124%;height:50%;background:#684634;clip-path:polygon(50% 0,100% 100%,0 100%);border-bottom:5px solid #392c25}
+.hut:after{content:"";position:absolute;bottom:0;left:41%;width:20%;height:55%;background:#352b2a;border:3px solid #d5a56b}
+.window{position:absolute;top:22%;left:13%;width:19%;height:25%;background:#ffcf71;box-shadow:0 0 20px #ffcf71}
+.npc{position:absolute;left:22%;bottom:28%;z-index:5;border:0;background:transparent;font-size:clamp(26px,4vw,44px);filter:drop-shadow(0 4px 1px #13261d);animation:bob 2s infinite}
+.npc span{display:block;font-size:12px;background:#122534dd;padding:3px 7px;border:1px solid var(--gold);border-radius:7px}
+.hero{position:absolute;left:48%;bottom:17%;z-index:6;width:52px;height:78px;transition:left .12s linear,bottom .12s linear;filter:drop-shadow(0 5px 2px #13261d)}
+.hero .cape{position:absolute;left:8px;top:28px;width:38px;height:43px;background:#2465a1;clip-path:polygon(10% 0,90% 0,100% 90%,50% 100%,0 85%);border:2px solid #183e66}
+.hero .head{position:absolute;left:13px;top:2px;width:27px;height:30px;border-radius:45% 45% 38% 38%;background:#f0bd91;border:3px solid #49392f;z-index:2}
+.hero .hair{position:absolute;left:10px;top:0;width:33px;height:15px;background:#302a31;border-radius:60% 60% 20% 15%;z-index:3}
+.hero .body{position:absolute;left:12px;top:28px;width:30px;height:29px;border-radius:7px;background:#b77d42;border:3px solid #674c36;z-index:2}
+.hero .leg{position:absolute;top:54px;width:12px;height:22px;background:#35445a;border:2px solid #202a3a;z-index:1}.hero .leg.l{left:12px}.hero .leg.r{left:29px}
+.hero .sword{position:absolute;right:-4px;top:31px;width:5px;height:46px;background:#d8e9ee;transform:rotate(-34deg);border:1px solid #536b7c;z-index:4}
+.hero.moving{filter:drop-shadow(0 0 8px #ffe08a)}
+.hud{position:absolute;z-index:10;background:var(--panel);border:1px solid var(--line);box-shadow:0 8px 24px #0003;backdrop-filter:blur(9px);border-radius:16px}
+.profile{top:14px;left:14px;width:min(340px,calc(100% - 28px));padding:12px;display:flex;gap:12px;align-items:center}
+.avatar{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#335f78,#152a3d);border:2px solid #c6e9f4;font-size:32px;flex-shrink:0}
+.profile-main{flex:1;min-width:0}.profile-top{display:flex;justify-content:space-between;gap:8px;font-weight:800;margin-bottom:7px}.meter{height:12px;background:#243442;border-radius:20px;overflow:hidden;margin:5px 0;position:relative}.meter span{display:block;width:100%;height:100%;transition:width .25s}.hp span{background:linear-gradient(90deg,#ff4b62,#ff8491)}.mp span{background:linear-gradient(90deg,#2696ff,#64d8ff)}.meter-label{position:absolute;inset:0;text-align:center;font-size:10px;line-height:12px;font-weight:800;text-shadow:0 1px 3px #000}
+.coins{top:16px;right:16px;padding:10px 14px;font-weight:800;color:var(--gold)}.settings{top:16px;right:120px;width:44px;height:44px;font-size:20px}
+.quest{top:90px;right:16px;width:min(285px,calc(100% - 32px));padding:13px}.quest h3{margin:0 0 6px;color:var(--gold);font-size:14px}.quest p{margin:0;color:#d8e8f3;font-size:12px;line-height:1.4}.quest button{margin-top:9px;background:#20394a;border:1px solid var(--line);border-radius:9px;padding:7px 10px;font-size:12px}
+.control{position:absolute;z-index:9;bottom:140px;width:116px;height:116px;border-radius:50%;background:#0817259c;border:1px solid #d5edff77;display:grid;place-items:center;touch-action:none;user-select:none}
+.joystick{left:20px}.stick{width:48px;height:48px;border-radius:50%;background:#b8d7e5a8;border:2px solid #e9f8ff;box-shadow:0 3px 8px #0006;transform:translate(0,0)}
+.action-stack{position:absolute;right:18px;bottom:142px;z-index:9;display:grid;grid-template-columns:repeat(2,66px);gap:10px;align-items:end}
+.action{width:66px;height:66px;border-radius:50%;background:#0b1a2bd9;border:1px solid #c9e8f8aa;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:25px;box-shadow:0 4px 12px #0004}
+.action small{font-size:10px}.action.attack{width:78px;height:78px;font-size:32px;background:#17324aeb;border:2px solid #d9efff}
+.bottom{position:absolute;z-index:12;left:0;right:0;bottom:0;min-height:116px;padding:10px max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:linear-gradient(0deg,#08121df5,#0a1825ed);border-top:1px solid #a8d6ef44;display:grid;grid-template-columns:minmax(180px,1.2fr) minmax(0,1fr);gap:12px}
+.log{border:1px solid var(--line);border-radius:12px;padding:9px 12px;font-size:12px;line-height:1.45;overflow:auto;max-height:95px;color:#d5e5ef}.log p{margin:2px 0}.log b{color:var(--blue)}.tabs{display:flex;gap:7px;justify-content:space-around;align-items:stretch}.tab{flex:1;min-width:0;border:1px solid var(--line);border-radius:12px;background:#102233;padding:7px 3px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;font-size:11px}.tab .ico{font-size:22px}.tab.active{border-color:var(--gold);box-shadow:inset 0 0 0 1px #ffd16655,0 0 14px #ffd16622;color:var(--gold)}
+.modal-backdrop{position:absolute;z-index:30;inset:0;background:#030a12bb;display:none;place-items:center;padding:16px}.modal-backdrop.open{display:grid}.modal{width:min(460px,100%);max-height:85%;overflow:auto;background:#102131;border:1px solid #86c7e3;border-radius:18px;padding:20px;box-shadow:0 20px 60px #0008}.modal h2{margin:0 0 12px;color:var(--gold)}.modal p{color:#d4e4ee;line-height:1.5}.modal .row{display:flex;gap:8px;flex-wrap:wrap}.modal button{border:1px solid var(--line);background:#1c3a4d;border-radius:10px;padding:10px 14px}.modal button.primary{background:#9a6a24;color:#fff6dc;border-color:#ffd166}
+.toast{position:absolute;z-index:25;top:50%;left:50%;transform:translate(-50%,-50%);background:#102333ed;border:1px solid var(--gold);padding:12px 18px;border-radius:12px;display:none;text-align:center;box-shadow:0 8px 35px #0008}.toast.show{display:block;animation:pop .25s ease}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes pop{from{opacity:0;transform:translate(-50%,-45%)}to{opacity:1;transform:translate(-50%,-50%)}}
+@media(max-width:700px){body{overflow:hidden}#game{min-height:520px}.world{bottom:150px}.profile{top:8px;left:8px;width:230px;padding:8px;gap:8px;border-radius:12px}.avatar{width:42px;height:42px;font-size:24px}.profile-top{font-size:12px;margin-bottom:3px}.meter{height:10px;margin:4px 0}.meter-label{font-size:9px;line-height:10px}.coins{top:8px;right:8px;padding:7px 9px;font-size:12px}.settings{top:52px;right:8px;width:36px;height:36px}.quest{top:62px;right:8px;width:190px;padding:9px;border-radius:12px}.quest h3{font-size:12px}.quest p{font-size:11px}.quest button{padding:5px 7px;font-size:11px}.hut{left:3%;bottom:27%}.npc{left:18%;bottom:27%}.castle{right:8%;bottom:40%}.tree.t2{left:15%}.control{width:98px;height:98px;bottom:164px}.joystick{left:12px}.stick{width:42px;height:42px}.action-stack{right:10px;bottom:164px;grid-template-columns:repeat(2,55px);gap:7px}.action{width:55px;height:55px;font-size:21px}.action.attack{width:66px;height:66px;font-size:27px}.bottom{min-height:150px;grid-template-columns:1fr;gap:7px;padding:7px 8px max(7px,env(safe-area-inset-bottom))}.log{max-height:45px;padding:5px 8px;font-size:10px}.tabs{gap:5px}.tab{font-size:10px;padding:5px 2px;border-radius:9px}.tab .ico{font-size:19px}}
+@media(max-height:620px) and (min-width:701px){.world{bottom:90px}.bottom{min-height:90px;padding:6px}.log{max-height:76px}.control,.action-stack{bottom:108px}.quest{top:80px}}
+</style>
+</head>
+<body>
+<div id="game" aria-label="Jogo de RPG Eldoria">
+  <main class="world" id="world">
+    <div class="sun"></div><div class="mountain one"></div><div class="mountain two"></div><div class="mountain three"></div>
+    <div class="castle"><div class="keep"></div><div class="tower t1"></div><div class="tower t2"></div><div class="roof"></div></div>
+    <div class="treeline"></div><div class="river"></div><div class="path"></div><div class="bridge"></div>
+    <div class="tree t1"></div><div class="tree t2"></div><div class="tree t3"></div><div class="tree t4"></div>
+    <div class="hut"><div class="window"></div></div>
+    <button class="npc" id="npc" aria-label="Conversar com a aldeã">🧙‍♀️<span>Falar!</span></button>
+    <div class="hero" id="hero" aria-label="Seu personagem"><div class="cape"></div><div class="head"></div><div class="hair"></div><div class="body"></div><div class="leg l"></div><div class="leg r"></div><div class="sword"></div></div>
+  </main>
+  <section class="hud profile">
+    <div class="avatar" id="avatar">🧑🏻‍🎤</div>
+    <div class="profile-main"><div class="profile-top"><span id="playerName">Arion</span><span>NV. <span id="level">1</span></span></div>
+      <div class="meter hp"><span id="hpBar"></span><div class="meter-label" id="hpText">100 / 100 PV</div></div>
+      <div class="meter mp"><span id="mpBar"></span><div class="meter-label" id="mpText">50 / 50 PM</div></div>
+    </div>
+  </section>
+  <div class="hud coins">🪙 <span id="coins">50</span> ouro</div>
+  <button class="hud settings" id="settingsBtn" aria-label="Configurações">⚙️</button>
+  <section class="hud quest"><h3>⚔️ O começo da jornada</h3><p id="questText">Encontre a aldeã perto da cabana e descubra sua missão.</p><button id="questBtn">Ver missão →</button></section>
+  <div class="control joystick" id="joystick" aria-label="Controle de movimento"><div class="stick" id="stick"></div></div>
+  <div class="action-stack">
+    <button class="action" id="potionBtn" aria-label="Usar poção">🧪<small>Poção (<span id="potions">3</span>)</small></button>
+    <button class="action" id="bagBtn" aria-label="Inventário">🎒<small>Bolsa</small></button>
+    <button class="action" id="runBtn" aria-label="Correr">🏃<small>Correr</small></button>
+    <button class="action attack" id="attackBtn" aria-label="Atacar">⚔️<small>Atacar</small></button>
+  </div>
+  <footer class="bottom">
+    <div class="log" id="log" aria-live="polite"><p><b>[Sistema]</b> Bem-vindo a Eldoria, aventureiro!</p><p><b>[Dica]</b> Use as setas ou WASD para andar. Toque nos controles no celular.</p></div>
+    <nav class="tabs" aria-label="Menu do jogo">
+      <button class="tab active" data-panel="Mapa"><span class="ico">🗺️</span>Mapa</button>
+      <button class="tab" data-panel="Missões"><span class="ico">📜</span>Missões</button>
+      <button class="tab" data-panel="Personagem"><span class="ico">🧑</span>Personagem</button>
+      <button class="tab" data-panel="Habilidades"><span class="ico">✨</span>Habilidades</button>
+      <button class="tab" data-panel="Configurações"><span class="ico">⚙️</span>Opções</button>
+    </nav>
+  </footer>
+  <div class="toast" id="toast"></div>
+  <div class="modal-backdrop" id="modalBackdrop"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><h2 id="modalTitle">Eldoria</h2><div id="modalContent"></div><div class="row" style="margin-top:16px"><button class="primary" id="closeModal">Continuar</button></div></section></div>
+</div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const state={x:48,y:17,hp:100,maxHp:100,mp:50,maxMp:50,level:1,xp:0,coins:50,potions:3,quest:0,kills:0,running:false};
+const world=$('world'),hero=$('hero');
+let keys={},moving=false,run=false,enemyTimer=null;
+function log(msg,type='Sistema'){const p=document.createElement('p');const b=document.createElement('b');b.textContent='['+type+'] ';p.append(b,document.createTextNode(msg));$('log').append(p);$('log').scrollTop=$('log').scrollHeight;while($('log').children.length>5)$('log').firstElementChild.remove()}
+function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1600)}
+function render(){ $('hpBar').style.width=(state.hp/state.maxHp*100)+'%';$('mpBar').style.width=(state.mp/state.maxMp*100)+'%';$('hpText').textContent=`${state.hp} / ${state.maxHp} PV`;$('mpText').textContent=`${state.mp} / ${state.maxMp} PM`;$('level').textContent=state.level;$('coins').textContent=state.coins;$('potions').textContent=state.potions;hero.style.left=state.x+'%';hero.style.bottom=state.y+'%';hero.classList.toggle('moving',moving)}
+function addXp(n){state.xp+=n;log(`Você ganhou ${n} XP.`,'Experiência');if(state.xp>=state.level*40){state.xp-=state.level*40;state.level++;state.maxHp+=15;state.maxMp+=5;state.hp=state.maxHp;state.mp=state.maxMp;toast('Subiu para o nível '+state.level+'!');log('Você subiu de nível e recuperou suas forças!','Sistema')}render()}
+function move(dx,dy){const speed=run?1.45:.72;state.x=Math.max(3,Math.min(94,state.x+dx*speed));state.y=Math.max(3,Math.min(67,state.y+dy*speed));moving=true;render();clearTimeout(move.off);move.off=setTimeout(()=>{moving=false;render()},140);if(state.x<31&&state.y>35&&state.quest===0)toast('Há alguém perto da cabana!')}
+function interactNpc(){if(Math.abs(state.x-22)<19&&Math.abs(state.y-28)<30){if(state.quest===0){showModal('Uma missão para você',`<p>“Aventureiro! Criaturas sombrias rondam a floresta. Derrote <b>3 slimes</b> e volte para receber sua recompensa.”</p><p>Recompensa: <b>100 moedas</b> e experiência.</p>`);state.quest=1;$('questText').textContent='Derrote 3 slimes na floresta. Progresso: '+state.kills+'/3';log('Nova missão: Slimes na floresta!','Missão');render()}else if(state.quest===1&&state.kills>=3){state.quest=2;state.coins+=100;addXp(60);$('questText').textContent='Missão concluída! Explore Eldoria e fique mais forte.';log('Missão concluída! Você recebeu 100 moedas.','Missão');showModal('Missão concluída!',`<p>A aldeã agradece sua coragem! Você recebeu <b>100 moedas</b> e 60 XP.</p><p>Agora o mundo de Eldoria está aberto para você explorar.</p>`);render()}else if(state.quest===1){showModal('Slimes na floresta',`<p>Você derrotou <b>${state.kills} de 3 slimes</b>.</p><p>Explore o mapa e toque em <b>Atacar</b> para enfrentar criaturas.</p>`)}else{showModal('A aldeã',`<p>“Obrigada por ajudar nossa vila! Continue explorando e fique atento aos perigos.”</p>`)}}else{toast('Chegue mais perto da aldeã para conversar.');log('Procure a aldeã perto da cabana.','Dica')}}
+function attack(){if(state.mp<5){toast('Mana insuficiente!');return}state.mp-=5;const damage=12+Math.floor(Math.random()*12)+state.level*2;const win=Math.random()>.22;render();if(win){state.kills++;const gold=5+Math.floor(Math.random()*9);state.coins+=gold;log(`Você derrotou um slime! +${damage} dano, +${gold} ouro.`,'Combate');addXp(15);if(state.quest===1){$('questText').textContent=`Derrote 3 slimes na floresta. Progresso: ${Math.min(state.kills,3)}/3`;if(state.kills>=3)toast('Objetivo concluído! Volte à aldeã.')}else toast('Slime derrotado! +15 XP')}else{const hurt=5+Math.floor(Math.random()*12);state.hp=Math.max(0,state.hp-hurt);log(`O slime revidou! Você perdeu ${hurt} PV.`,'Combate');toast('Você recebeu '+hurt+' de dano!');if(state.hp===0){state.hp=50;state.mp=25;state.x=48;state.y=17;state.coins=Math.max(0,state.coins-10);log('Você desmaiou e voltou à vila. Perdeu 10 moedas.','Sistema');toast('Você voltou à vila.')} }render()}
+function potion(){if(state.potions<=0){toast('Você não tem poções!');return}if(state.hp===state.maxHp&&state.mp===state.maxMp){toast('Você já está com energia cheia.');return}state.potions--;state.hp=Math.min(state.maxHp,state.hp+40);state.mp=Math.min(state.maxMp,state.mp+20);render();log('Você usou uma poção: recuperou PV e PM.','Inventário');toast('Energia recuperada!')}
+function showModal(title,content){$('modalTitle').textContent=title;$('modalContent').innerHTML=content;$('modalBackdrop').classList.add('open')}
+function closeModal(){$('modalBackdrop').classList.remove('open')}
+$('closeModal').addEventListener('click',closeModal);$('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal()});
+$('npc').addEventListener('click',interactNpc);$('attackBtn').addEventListener('click',attack);$('potionBtn').addEventListener('click',potion);
+$('runBtn').addEventListener('pointerdown',e=>{run=true;$('runBtn').style.borderColor='var(--gold)'});['pointerup','pointerleave','pointercancel'].forEach(ev=>$('runBtn').addEventListener(ev,()=>{run=false;$('runBtn').style.borderColor=''}));
+$('bagBtn').addEventListener('click',()=>showModal('Inventário',`<p>🧪 Poções de cura: <b>${state.potions}</b></p><p>🪙 Ouro: <b>${state.coins}</b></p><p>⚔️ Slimes derrotados: <b>${state.kills}</b></p><p>✨ Experiência: <b>${state.xp}/${state.level*40} XP</b></p>`));
+$('questBtn').addEventListener('click',()=>showModal('Diário de missões',state.quest===0?'<p><b>O começo da jornada</b></p><p>Encontre a aldeã perto da cabana para receber sua primeira missão.</p>':state.quest===1?`<p><b>Slimes na floresta</b></p><p>Slimes derrotados: ${Math.min(state.kills,3)}/3</p><p>Derrote 3 slimes usando o botão Atacar e retorne à aldeã.</p>`:'<p><b>Missão concluída!</b></p><p>Você ajudou a vila. Continue explorando, treinando e acumulando ouro.</p>'));
+$('settingsBtn').addEventListener('click',()=>showModal('Configurações',`<p>Bem-vindo ao RPG <b>Eldoria</b>.</p><p>Computador: use <b>WASD</b> ou as <b>setas</b> para se mover. Pressione <b>Espaço</b> para atacar e <b>E</b> para conversar.</p><p>Celular e tablet: use o controle direcional e os botões na tela.</p><p>Seu progresso fica nesta sessão enquanto a página estiver aberta.</p><div class="row"><button id="resetBtn">Reiniciar jogo</button></div>`)); 
+$('modalContent').addEventListener('click',e=>{if(e.target.id==='resetBtn'){Object.assign(state,{x:48,y:17,hp:100,maxHp:100,mp:50,maxMp:50,level:1,xp:0,coins:50,potions:3,quest:0,kills:0});$('questText').textContent='Encontre a aldeã perto da cabana e descubra sua missão.';$('log').innerHTML='';log('Sua aventura recomeçou!');render();closeModal()}});
+document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');const panel=btn.dataset.panel;if(panel==='Mapa'){toast('Você está explorando Eldoria.')}else if(panel==='Missões')$('questBtn').click();else if(panel==='Personagem')showModal('Personagem',`<p>🧑 Arion — <b>Nível ${state.level}</b></p><p>❤️ Vida: ${state.hp}/${state.maxHp}</p><p>💧 Mana: ${state.mp}/${state.maxMp}</p><p>✨ Experiência: ${state.xp}/${state.level*40} XP</p><p>⚔️ Slimes derrotados: ${state.kills}</p>`);else if(panel==='Habilidades')showModal('Habilidades',`<p><b>⚔️ Golpe do aventureiro</b> — causa dano ao inimigo e custa 5 PM. (Botão Atacar)</p><p><b>🧪 Poção</b> — recupera até 40 PV e 20 PM.</p><p>Suba de nível para aumentar seus atributos.</p>`);else $('settingsBtn').click()}));
+window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();keys[k]=true;if(k===' '){attack()}if(k==='e'){interactNpc()}if(k==='q'){potion()}});
+window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
+function keyLoop(){let dx=0,dy=0;if(keys.a||keys.arrowleft)dx--;if(keys.d||keys.arrowright)dx++;if(keys.w||keys.arrowup)dy++;if(keys.s||keys.arrowdown)dy--;if(dx||dy)move(dx,dy);requestAnimationFrame(keyLoop)}keyLoop();
+const joy=$('joystick'),stick=$('stick');let joyActive=false,joyRect;
+function joyMove(e){if(!joyActive)return;const r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=e.clientX-cx,dy=e.clientY-cy;const max=r.width*.31,len=Math.hypot(dx,dy)||1;if(len>max){dx=dx/len*max;dy=dy/len*max}stick.style.transform=`translate(${dx}px,${dy}px)`;if(Math.hypot(dx,dy)>8)move(dx/max,-dy/max)}
+joy.addEventListener('pointerdown',e=>{joyActive=true;joy.setPointerCapture(e.pointerId);joyMove(e)});joy.addEventListener('pointermove',joyMove);function joyEnd(){joyActive=false;stick.style.transform='translate(0,0)'}joy.addEventListener('pointerup',joyEnd);joy.addEventListener('pointercancel',joyEnd);
+render();
+})();
+</script>
+</body>
+</html>
