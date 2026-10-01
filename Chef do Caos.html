@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chef do Caos</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ffe08a;--ink:#2b1a12;--red:#ff5a4d;--mint:#5fe3b0;--card:#fffaf0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;color:var(--ink);font:500 clamp(16px,2.2vw,19px)/1.45 Fredoka,'Trebuchet MS',sans-serif;background:var(--bg);background-image:radial-gradient(#0002 2px,transparent 2px);background-size:22px 22px;transition:background-color 1s;overflow-x:hidden}
+.fd{position:fixed;top:-60px;opacity:.28;animation:dr linear infinite;pointer-events:none}
+@keyframes dr{to{transform:translateY(115vh) rotate(360deg)}}
+.wrap{position:relative;max-width:720px;margin:0 auto;padding:12px 14px 30px}
+h1{margin:6px 0 10px;text-align:center;font-weight:700;font-size:clamp(26px,6vw,42px);color:var(--red);-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--ink);letter-spacing:1px;transform:rotate(-2deg)}
+.box{background:var(--card);border:3px solid var(--ink);border-radius:18px;box-shadow:6px 6px 0 var(--ink)}
+#hud{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;padding:10px 12px;font-size:.9em}
+.bar{height:12px;border:2px solid var(--ink);border-radius:8px;background:#fff;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--red);transition:width .4s}
+#inv{grid-column:1/3;display:flex;gap:6px;flex-wrap:wrap;font-size:1.05em}
+#inv span{background:#fff;border:2px solid var(--ink);border-radius:20px;padding:0 9px}
+#stage{margin-top:16px;padding:18px 16px;text-align:center}
+#art{font-size:clamp(66px,18vw,106px);line-height:1.1;animation:bo 1.6s ease-in-out infinite}
+@keyframes bo{50%{transform:translateY(-12px) scale(1.06,.96)}}
+#title{font-weight:700;font-size:clamp(20px,4.5vw,28px);margin:4px 0}
+#text{min-height:3.5em;margin:6px 0 14px}
+small{display:block;font-size:.76em;opacity:.75}
+#btns{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+button{font:inherit;font-weight:600;color:var(--ink);background:#fff;border:3px solid var(--ink);border-radius:14px;padding:11px 8px;min-height:52px;cursor:pointer;box-shadow:4px 4px 0 var(--ink);touch-action:manipulation;transition:.1s}
+button:hover{background:#fff1c9}
+button:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--ink)}
+.go{background:var(--mint)}
+.red{background:var(--red);color:#fff}
+.on{background:#ffd23f;transform:translateY(-3px)}
+.dim{opacity:.45}
+.door{padding:16px 8px;font-size:1.05em}
+.door b{display:block;font-size:2em}
+#pan{font-size:1.6em;min-height:1.6em;margin:4px 0}
+#tb{height:28px;margin:14px 0 4px;border:3px solid var(--ink);border-radius:14px;background:#fff;position:relative;overflow:hidden}
+#tz{position:absolute;left:65%;width:20%;height:100%;background:var(--mint);border:2px solid var(--ink)}
+#tp{position:absolute;left:0;top:0;height:100%;width:0;background:#ff9f43aa}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>CHEF DO CAOS</h1>
+<div id="hud" class="box"></div>
+<div id="stage" class="box"><div id="art"></div><div id="title"></div><div id="text"></div><div id="btns"></div></div>
+</div>
+<script>
+const $=s=>document.querySelector(s),R=n=>Math.floor(Math.random()*n),pick=a=>a[R(a.length)];
+let P=null,iv=0;
+'🍕🍩🥐🍓🌮🍇🧁🍤'.match(/./gu).concat('🍉🍪🥨🍙'.match(/./gu)).forEach(e=>{const s=document.createElement('span');s.className='fd';s.textContent=e;s.style.cssText=`left:${R(95)}%;font-size:${22+R(30)}px;animation-duration:${14+R(16)}s;animation-delay:-${R(25)}s`;document.body.append(s)});
+const FL={d:['🍬','Doce'],s:['🧂','Salgado'],a:['🍋','Azedo'],p:['🌶️','Picante'],m:['☕','Amargo']},KS=Object.keys(FL);
+const CL={
+vov:{n:'Vovó Ninja',e:'🥷',hp:38,slots:2,pow:1,inv:{d:1,s:3,a:1,p:1,m:1},d:'Cura 3 de vida a cada vitória'},
+rob:{n:'Robô Confeiteiro',e:'🤖',hp:32,slots:3,pow:0,inv:{d:3,s:0,a:2,p:0,m:2},d:'Cozinha com 3 ingredientes'},
+dra:{n:'Dragão Churrasqueiro',e:'🐲',hp:36,slots:2,pow:2,inv:{d:0,s:2,a:0,p:4,m:1},d:'Picante causa +50% de dano'}};
+const EN=[
+{n:'Tomate Bravo',e:'🍅',w:'s',r:'a'},{n:'Brócolis Brutamontes',e:'🥦',w:'p',r:'m'},{n:'Limão Rancoroso',e:'🍋',w:'d',r:'a'},
+{n:'Pimentão Dragão',e:'🫑',w:'d',r:'p'},{n:'Cebola Chorona',e:'🧅',w:'m',r:'s'},{n:'Cogumelo Mágico',e:'🍄',w:'p',r:'d'},
+{n:'Abacate Sombrio',e:'🥑',w:'a',r:'s'},{n:'Rosquinha Zumbi',e:'🍩',w:'m',r:'d'}];
+const DISH={ds:['Caramelo Salgado','g'],da:['Limonada','h'],dp:['Chocolate Quente','h'],dm:['Brigadeiro Amargo','b'],sa:['Salada Cítrica','s'],sp:['Churrasco Cajun','d'],sm:['Torrada Queimada','s'],ap:['Ceviche Infernal','d'],am:['Chá Gelado','b'],mp:['Café do Diabo','d']};
+const ZN=['Entradas','Pratos Principais','Sobremesas','Cozinha do Rei'],zone=i=>i<4?0:i<7?1:i<9?2:3;
+
+function hud(){
+ if(!P){$('#hud').innerHTML='';return}
+ $('#hud').innerHTML=`<div>❤️ ${P.hp}/${P.mhp}<div class="bar"><i style="width:${Math.max(0,P.hp/P.mhp*100)}%"></i></div></div><div>🪙 ${P.gold} · 🥄 poder ${P.pow} · 🍳 ${P.slots} vagas<br>${P.i?'🍽️ '+ZN[zone(P.i)]+' '+P.i+'/9':''}</div><div id="inv">${KS.map(k=>`<span>${FL[k][0]}${P.inv[k]}</span>`).join('')}</div>`;
+ document.body.style.setProperty('--bg',['#ffe08a','#ffb3c7','#c9b8ff','#ff9a7a'][zone(Math.max(1,P.i))]);
+}
+function show(art,title,text,btns){
+ clearInterval(iv);
+ $('#art').textContent=art;$('#title').textContent=title;$('#text').innerHTML=text;
+ const b=$('#btns');b.innerHTML='';
+ btns.forEach(([l,f,c])=>{const x=document.createElement('button');x.innerHTML=l;if(c)x.className=c;x.onclick=f;b.append(x)});
+ hud();
+}
+const res=(m,t='Que delícia!')=>show('🍽️',t,m,[['Próximo prato ➡️',next,'go']]);
+const give=n=>{let o='';for(let j=0;j<n;j++){const k=pick(KS);P.inv[k]++;o+=FL[k][0]}return o};
+const heal=n=>P.hp=Math.min(P.mhp,P.hp+n);
+const earn=n=>{P.gold+=n;return `<b>+${n}🪙</b>`};
+function die(){show('😵','Você virou Ingrediente',`O Rei Glutão engoliu você no prato ${P.i}. Que azar... mas sempre dá pra tentar outra receita!`,[['Cozinhar de novo 👨‍🍳',menu,'red']]);P=null;hud()}
+function menu(){
+ P=null;document.body.style.setProperty('--bg','#ffe08a');
+ show('👨‍🍳','Reino dos Sabores','O <b>Rei Glutão</b> engoliu todos os temperos e o mundo ficou sem gosto! Cozinhe monstros-comida usando o sabor que eles <i>não aguentam</i>. Escolha seu chef:',
+  Object.entries(CL).map(([k,c])=>[`${c.e} <b>${c.n}</b><small>${c.hp} vida · ${c.d}</small>`,()=>start(k)]));
+}
+function start(k){
+ const c=CL[k];P={k,hp:c.hp,mhp:c.hp,gold:8,pow:c.pow,slots:c.slots,inv:{...c.inv},i:0};
+ show(c.e,'Avental Pronto!','São 9 pratos até o Rei Glutão. Em cada um, escolha seu caminho. Boa sorte, chef!',[['Abrir a cozinha 🔪',next,'go']]);
+}
+function next(){
+ P.i++;
+ if(P.i==9)return show('🍔','Cozinha do Rei','O Rei Glutão ruge. Sua fraqueza muda a cada rodada, então fique esperto!',[['Enfrentar o Rei 👑',()=>fight(true),'red']]);
+ const T={fight:['⚔️','Batalha'],market:['🛒','Mercado'],event:['❓','Surpresa'],rest:['🍲','Cantina'],oven:['🔥','Forno Mágico'],cake:['🎂','Ponto do Bolo']};
+ const pool=['fight','fight','fight','market','event','event','rest','oven','cake'],ch=[];
+ while(ch.length<3){const t=pick(pool);if(!ch.includes(t))ch.push(t)}
+ show('🗺️',`Prato ${P.i}: ${ZN[zone(P.i)]}`,'Qual porta da cozinha você abre?',ch.map(t=>[`<b>${T[t][0]}</b>${T[t][1]}`,()=>go(t),'door']));
+}
+function go(t){
+ if(t=='fight')fight();else if(t=='event')ev();else if(t=='market')market();else if(t=='cake')cake();
+ else if(t=='rest')show('🍲','Cantina da Dona Concha','Cheirinho de sopa quente! Você pode comer ou pedir temperos.',[['🥣 Sopa (+14 vida)',()=>{heal(14);res('Você se sente novo em folha.')}],['🧺 Cesta de temperos',()=>res(`A cantineira te dá ${give(3)}`)]]);
+ else show('🔥','Forno Mágico','O forno sussurra: "escolha uma bênção, chef..."',[['🥄 +2 poder',()=>{P.pow+=2;res('Sua colher brilha!')}],['❤️ +8 vida máx.',()=>{P.mhp+=8;P.hp+=8;res('Você fica parrudo!')}],['🍳 +1 vaga na panela',()=>{if(P.slots>=4)return res('A panela já é enorme!');P.slots++;res('Cabe mais um ingrediente!')}]]);
+}
+function cake(){
+ let pos=0,z0=65;
+ show('🎂','Ponto do Bolo','Toque em <b>Assar!</b> quando a massa estiver na faixa verde. Se passar de 100%, queima!<div id="tb"><i id="tp"></i><i id="tz"></i></div>',[['Assar! 🔥',()=>{clearInterval(iv);pos>=z0&&pos<=z0+20?res(`Bolo perfeito! Ganhou ${give(3)} e ${earn(8+P.i)}`,'Perfeito!'):res(pos<z0?'Cru demais... só sobrou farelo.':'Queimou! Cheiro de fumaça.','Ops!')},'go']]);
+ iv=setInterval(()=>{pos+=.9;$('#tp').style.width=pos+'%';if(pos>=100){clearInterval(iv);res('Queimou! Cheiro de fumaça.','Ops!')}},16);
+}
+function market(m=''){
+ const ks=[...KS].sort(()=>Math.random()-.5).slice(0,3);
+ const it=ks.map(k=>[`${FL[k][0]} 3x ${FL[k][1]}`,6,()=>P.inv[k]+=3]);
+ it.push(['🥣 Sopa +14 vida',7,()=>heal(14)],['🥄 Frigideira +2 poder',16,()=>P.pow+=2]);
+ const draw=msg=>show('🛒','Mercado do Gato Feirante',(msg||'Um gato de avental grita: "Tudo fresquinho, miau!"')+`<small>Você tem ${P.gold}🪙</small>`,
+  it.map(([l,c,f])=>[`${l}<small>${c}🪙</small>`,()=>{if(P.gold<c)return draw('Faltam moedas, chef.');P.gold-=c;f();draw('Comprado! 😸')}]).concat([['Sair ➡️',next,'go']]));
+ draw(m);
+}
+const EV=[
+()=>['😼','Gato Garçom','Ele equilibra 12 pratos e sussurra: "gorjeta?"',[['Dar 5🪙',()=>{if(P.gold<5)return res('Sem moedas! O gato bufa.');P.gold-=5;P.pow++;res('Ele te ensina um truque: <b>+1 poder</b>.')}],['Fazer carinho',()=>{heal(6);res('Ronronar cura: <b>+6 vida</b>.')}]]],
+()=>['🌋','Vulcão de Chocolate','Borbulha, cheira divinamente e parece perigoso.',[['Mergulhar!',()=>{if(R(2)){P.inv.d+=3;res(`Doce demais! Pegou ${FL.d[0]}x3.`)}else{P.hp-=6;P.hp<=0?die():res('Queimou a língua! -6 vida.')}}],['Só provar',()=>{P.inv.d+=2;res(`Rendeu ${FL.d[0]}x2.`)}]]],
+()=>['🍣','Sushi Ninja','Ele surge do nada: "Lute comigo, chef!"',[['Aceitar duelo',()=>fight()],['Recusar',()=>{P.inv.s++;res(`Ele larga ${FL.s[0]} e some.`)}]]],
+()=>['🧊','Geladeira Misteriosa','Está zumbindo... e tremendo.',[['Abrir',()=>R(3)?res(`Dentro havia ${give(3)}`):fight()],['Trancar',()=>res('Você sai de fininho.')]]],
+()=>['🍕','Pizza Senciente','"Coma-me, mas com respeito", diz a pizza.',[['Comer tudo',()=>{heal(12);P.gold=Math.max(0,P.gold-3);res('<b>+12 vida</b>, mas pagou 3🪙 de culpa.')}],['Pedir conselho',()=>{P.pow++;res('"Mais queijo." <b>+1 poder</b>.')}]]],
+()=>['🥟','Feira de Pastéis','Uma tia grita "pastel de tudo!"',[['Pagar 5🪙',()=>{if(P.gold<5)return res('Sem moedas!');P.gold-=5;res(`Saco surpresa: ${give(3)}`)}],['Ajudar a fritar',()=>res(`Ela agradece com ${earn(6+P.i)}`.replace('Ela agradece com','Ela te paga'))]]],
+()=>['🫖','Bruxa do Chá','Ela oferece uma xícara fumegante.',[['Chá amargo ☕',()=>{P.inv.m+=3;res('Você guarda <b>3 ☕</b>.')}],['Chá doce 🍬',()=>{P.inv.d+=3;res('Você guarda <b>3 🍬</b>.')}]]]];
+function ev(){const[a,t,x,b]=pick(EV)();show(a,t,x,b)}
+
+function fight(boss){
+ const i=P.i,e=boss?{n:'Rei Glutão',e:'🍔',hp:130,atk:9,g:60,w:pick(KS),r:pick(KS)}:{...pick(EN),hp:16+i*6+R(6),atk:3+i,g:5+i*2+R(5)};
+ e.mhp=e.hp;let sel=[],stun=0,shield=0;
+ const dmg=s=>{let t=0;s.forEach(k=>{let x=4+P.pow;if(k==e.w)x*=2.2;else if(k==e.r)x*=.4;if(P.k=='dra'&&k=='p')x*=1.5;t+=x});return Math.round(t)};
+ const view=m=>{
+  const cnt=k=>sel.filter(x=>x==k).length;
+  show(e.e,`${e.n} ${e.hp}/${e.mhp}`,(m?m+'<br>':'')+`Fraco contra ${FL[e.w][0]} <b>${FL[e.w][1]}</b> · resiste a ${FL[e.r][0]}${stun?'<br>😴 Está tonto!':''}<div id="pan">🍳 ${sel.map(k=>FL[k][0]).join(' ')||'(vazia)'}</div>`,
+   KS.map(k=>[`${FL[k][0]} ${FL[k][1]}<small>restam ${P.inv[k]-cnt(k)}</small>`,()=>{if(sel.length>=P.slots)return view('Panela cheia!');if(cnt(k)>=P.inv[k])return view('Acabou esse tempero!');sel.push(k);view(m)},cnt(k)?'on':''])
+   .concat([['🍳 Cozinhar!',()=>cook(),'go'],['🧽 Limpar',()=>{sel=[];view()}],['🥄 Colherada',()=>act(3+P.pow,'Você dá uma colherada')],['🏃 Fugir',()=>flee(),'dim']]));
+ };
+ function flee(){if(boss)return view('Não dá pra fugir do Rei!');if(R(2)){const l=Math.min(5,P.gold);P.gold-=l;return res(`Você escapa, deixando ${l}🪙 para trás.`,'Fugiu!')}act(0,'A fuga falhou!')}
+ function cook(){
+  if(!sel.length)return view('Escolha ingredientes primeiro!');
+  let x=dmg(sel),m='',fx='';
+  const u=[...new Set(sel)];
+  sel.forEach(k=>P.inv[k]--);
+  if(u.length>=2){x+=3;const d=DISH[[...u].sort((a,b)=>KS.indexOf(a)-KS.indexOf(b)).slice(0,2).join('')]||['Banquete Caótico','d'];m=`🍽️ <b>${d[0]}</b>! `;fx=d[1]}
+  else if(sel.length>1){m='🍽️ <b>Dose Dupla</b>! ';x+=2}
+  if(sel.length>=3){fx=fx||'d';x+=2}
+  if(fx=='d')x+=6;if(fx=='h')heal(6);if(fx=='s')stun=1;if(fx=='b')shield=4;if(fx=='g')m+=earn(5)+' ';
+  const w=sel.includes(e.w)?' Super eficaz!':'';
+  sel=[];act(x,m+`Dano: -${x}.${w}`);
+ }
+ function act(x,m){
+  e.hp-=x;
+  if(e.hp<=0)return win();
+  if(stun){stun--;m+=` ${e.n} está tonto.`}
+  else{let d=Math.max(1,e.atk+R(3)-shield);shield=0;P.hp-=d;m+=` ${e.n} te acerta: -${d} vida.`}
+  if(P.hp<=0)return die();
+  if(boss){e.w=pick(KS);e.r=pick(KS.filter(k=>k!=e.w))}
+  view(m);
+ }
+ function win(){
+  if(boss)return show('🏆','Os Sabores Voltaram!',`O Rei Glutão arrota todos os temperos de volta e o reino ganha cor e cheiro de novo. Você terminou com ${P.gold}🪙!`,[['Cozinhar outra vez 👨‍🍳',menu,'go']]);
+  const g=5+i*2+R(5);P.gold+=g;if(P.k=='vov')heal(3);
+  show('🎉','Prato Limpo!',`${e.n} virou jantar. ${earn(g)} e ingredientes: ${give(2)}${R(4)==0?'<br>🎁 Achou um tempero lendário: <b>+1 poder</b>!':''}`,[['Próximo prato ➡️',()=>{next()},'go']]);
+  if(!$('#text').innerHTML.includes('tempero lendário'))return;P.pow++;hud();
+ }
+ view(boss?'O Rei ruge!':`${e.n} aparece na cozinha!`);
+}
+menu();
+</script>
+</body>
+</html>
