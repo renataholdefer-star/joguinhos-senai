@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lanterna do Abismo</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--h:190;--teal:#2fe0c4;--amber:#ffb84d;--ink:#d9f3ee;--red:#ff6b6b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;color:var(--ink);font:clamp(16px,2.2vw,19px)/1.5 Spectral,Georgia,serif;background:#02080c radial-gradient(ellipse at 50% 0%,hsl(var(--h) 60% 16%),#02080c 72%) fixed;transition:background 1.5s;overflow-x:hidden}
+.bub{position:fixed;bottom:-30px;border-radius:50%;border:1px solid #2fe0c455;background:#2fe0c411;animation:up linear infinite;pointer-events:none}
+@keyframes up{to{transform:translateY(-115vh) translateX(20px)}}
+.wrap{position:relative;max-width:720px;margin:0 auto;padding:12px 14px 30px}
+h1{font:700 clamp(22px,5vw,34px) 'Cinzel Decorative',Georgia,serif;text-align:center;margin:6px 0 10px;color:var(--amber);text-shadow:0 0 18px #ffb84d88;letter-spacing:2px}
+#hud{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;font-size:.85em;background:#0008;border:1px solid #2fe0c433;border-radius:14px;padding:10px 12px;backdrop-filter:blur(6px)}
+.bar{height:9px;border-radius:9px;background:#fff1;overflow:hidden;margin-top:2px}
+.bar i{display:block;height:100%;transition:width .4s}
+#relics{grid-column:1/3;font-size:1.3em;min-height:1.4em}
+#stage{margin-top:14px;background:linear-gradient(#0a2a35cc,#05141cdd);border:1px solid #2fe0c444;border-radius:20px;padding:18px 16px;text-align:center;box-shadow:0 0 40px #2fe0c411 inset,0 10px 40px #0008}
+#art{font-size:clamp(64px,18vw,104px);line-height:1.1;animation:fl 4s ease-in-out infinite;filter:drop-shadow(0 0 22px var(--amber))}
+@keyframes fl{50%{transform:translateY(-10px) rotate(3deg)}}
+#title{font:700 clamp(18px,4vw,24px) 'Cinzel Decorative',Georgia,serif;color:var(--teal);margin:6px 0}
+#text{min-height:3.5em;margin:6px 0 14px}
+#text small{color:#9bc;display:block}
+#btns{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+button{font:inherit;color:var(--ink);background:linear-gradient(#134a55,#0b2c36);border:1px solid var(--teal);border-radius:12px;padding:12px 10px;min-height:50px;cursor:pointer;touch-action:manipulation;transition:.15s}
+button:hover{box-shadow:0 0 16px #2fe0c477;transform:translateY(-2px)}
+button:active{transform:scale(.97)}
+button small{display:block;font-size:.72em;color:#9cc;margin-top:3px}
+.go{border-color:var(--amber);background:linear-gradient(#6b4210,#3a2308);color:#ffe3b0}
+.dim{opacity:.4}
+.door{font-size:1.05em;padding:16px 10px}
+.door b{display:block;font-size:2em}
+#tb{position:relative;height:26px;margin:14px 0 4px;background:#fff1;border-radius:13px;overflow:hidden}
+#tz{position:absolute;top:0;width:30%;height:100%;background:#ffb84d66;border:2px solid var(--amber)}
+#tp{position:absolute;top:0;width:10px;height:100%;background:var(--teal);box-shadow:0 0 14px var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Lanterna do Abismo</h1>
+<div id="hud"></div>
+<div id="stage"><div id="art"></div><div id="title"></div><div id="text"></div><div id="btns"></div></div>
+</div>
+<script>
+const $=s=>document.querySelector(s),R=n=>Math.floor(Math.random()*n),pick=a=>a[R(a.length)];
+let P=null,iv=0;
+for(let i=0;i<18;i++){const b=document.createElement('span'),s=6+R(26);b.className='bub';b.style.cssText=`left:${R(100)}%;width:${s}px;height:${s}px;animation-duration:${9+R(14)}s;animation-delay:-${R(20)}s`;document.body.append(b)}
+const CL={
+lan:{n:'Lanterneiro',e:'🏮',hp:40,luz:12,atk:5,sk:'Clarão Solar',d:'8 de dano e atordoa'},
+can:{n:'Cantora de Sal',e:'🐚',hp:34,luz:10,atk:4,sk:'Canção de Ninar',d:'adormece o inimigo e cura 5'},
+rel:{n:'Relojoeiro',e:'⏳',hp:36,luz:14,atk:4,sk:'Rebobinar',d:'cura 8 e anula o golpe'}};
+const RL=[
+{n:'Pérola Viva',e:'🔮',d:'+3 ataque',f:p=>p.atk+=3},
+{n:'Concha-Escudo',e:'🛡️',d:'-2 dano sofrido',f:p=>p.def+=2},
+{n:'Lanterna Eterna',e:'💡',d:'+6 luz máx.',f:p=>{p.mluz+=6;p.luz+=6}},
+{n:'Dente de Leviatã',e:'🦷',d:'25% de crítico',f:p=>p.crit=.25},
+{n:'Sino Mudo',e:'🔔',d:'+30% pérolas',f:p=>p.gm=1.3},
+{n:'Coração de Coral',e:'🪸',d:'+10 vida máx.',f:p=>{p.mhp+=10;p.hp+=10}}];
+const EN=[['Lula Candelabro','🦑'],['Caranguejo-Cofre','🦀'],['Medusa Lustre','🪼'],['Baiacu Sombrio','🐡'],['Polvo Arquivista','🐙'],['Peixe-Lanterna Ladrão','🐟'],['Náufrago Esquecido','👻'],['Tubarão de Vidro','🦈']];
+const ZN=['Águas Rasas dos Sinos','Cidade dos Relógios Afogados','Biblioteca Sem Fundo','Coração do Abismo'];
+const zone=d=>d<4?0:d<7?1:d<10?2:3;
+
+function hud(){
+ if(!P){$('#hud').innerHTML='';return}
+ const b=(v,m,c)=>`<div class="bar"><i style="width:${Math.max(0,v/m*100)}%;background:${c}"></i></div>`;
+ $('#hud').innerHTML=`<div>❤️ Vida ${P.hp}/${P.mhp}${b(P.hp,P.mhp,'#ff6b6b')}</div><div>💡 Luz ${P.luz}/${P.mluz}${b(P.luz,P.mluz,'#ffb84d')}</div><div>🪙 ${P.gold} pérolas · ⚔️ ${P.atk}</div><div>🌊 ${P.depth?ZN[zone(P.depth)]+' · '+P.depth+'/10':''}</div><div id="relics">${P.relics.map(r=>`<span title="${r.n}: ${r.d}">${r.e}</span>`).join(' ')}</div>`;
+ document.body.style.setProperty('--h',[190,270,160,350][zone(Math.max(1,P.depth))]);
+}
+function show(art,title,text,btns){
+ clearInterval(iv);
+ $('#art').textContent=art;$('#title').textContent=title;$('#text').innerHTML=text;
+ const b=$('#btns');b.innerHTML='';
+ btns.forEach(([l,f,c])=>{const x=document.createElement('button');x.innerHTML=l;if(c)x.className=c;x.onclick=f;b.append(x)});
+ hud();
+}
+const res=(m,t='Maré calma')=>show('🌊',t,m,[['Seguir mais fundo ⬇️',next,'go']]);
+const gold=(n,m)=>{n=Math.round(n*P.gm);P.gold+=n;res(`${m} <b>+${n} pérolas.</b>`)};
+function giveRelic(){
+ const a=RL.filter(r=>!P.relics.includes(r));
+ if(!a.length){P.gold+=20;return 'Nada novo restou: +20 pérolas.'}
+ const r=pick(a);P.relics.push(r);r.f(P);return `Relíquia: ${r.e} <b>${r.n}</b> (${r.d}).`;
+}
+const relic=m=>res(m+' '+giveRelic(),'Relíquia!');
+function die(){
+ show('💀','Engolido pelo Abismo',`Sua lanterna se apaga na profundidade ${P.depth}. O mar de vidro guarda mais um nome.<small>Pérolas coletadas: ${P.gold}</small>`,[['Mergulhar de novo 🏮',menu,'go']]);
+ P=null;hud();
+}
+function menu(){
+ P=null;document.body.style.setProperty('--h',190);
+ show('🏮','O Último Lanterneiro','O mar secou em vidro e afundou uma cidade de relógios. Dizem que no fundo dorme o <b>Leviatã</b>, devorador da luz. Escolha quem desce:',
+ Object.entries(CL).map(([k,c])=>[`${c.e} <b>${c.n}</b><small>${c.hp} vida · ${c.sk}: ${c.d}</small>`,()=>start(k)]));
+}
+function start(k){
+ const c=CL[k];
+ P={k,hp:c.hp,mhp:c.hp,luz:c.luz,mluz:c.luz,atk:c.atk,gold:10,def:0,crit:0,gm:1,cd:0,depth:0,relics:[]};
+ show(c.e,'A Descida','Você acende a lanterna e salta. A luz diminui a cada passo, e a escuridão morde quem fica sem ela.',[['Mergulhar ⬇️',next,'go']]);
+}
+function next(){
+ P.depth++;let note='';
+ if(P.luz>0)P.luz--;else{P.hp-=3;note='<small>🌑 A escuridão morde: -3 vida.</small>'}
+ if(P.hp<=0)return die();
+ if(P.depth==10)return show('🐋','Coração do Abismo','Ossos de relógios gigantes. Uma sombra do tamanho de um bairro abre um olho.'+note,[['Enfrentar o Leviatã ⚔️',()=>fight(true),'go']]);
+ const T={fight:['⚔️','Corrente hostil'],event:['🌀','Algo brilha...'],shop:['🏪','Luz de mercador'],rest:['🫧','Bolsão de ar'],treasure:['💎','Baú na maré']};
+ const pool=['fight','fight','event','event','event','shop','rest','treasure'],ch=[];
+ while(ch.length<3){const t=pick(pool);if(!ch.includes(t))ch.push(t)}
+ show('🚪',`Profundidade ${P.depth}`,`Três caminhos se abrem em <i>${ZN[zone(P.depth)]}</i>. Qual seguir?`+note,
+  ch.map(t=>[`<b>${T[t][0]}</b>${T[t][1]}`,()=>go(t),'door']));
+}
+function go(t){
+ if(t=='fight')fight();
+ else if(t=='event')ev();
+ else if(t=='shop')shop();
+ else if(t=='treasure')tide();
+ else show('🫧','Bolsão de Ar','Uma cúpula de ar quente, silenciosa. Dá para descansar um pouco.',[['😮‍💨 Respirar (+12 vida)',()=>{P.hp=Math.min(P.mhp,P.hp+12);res('Você recupera o fôlego.')}],['🕯️ Reacender (+6 luz)',()=>{P.luz=Math.min(P.mluz,P.luz+6);res('A chama volta a crescer.')}]]);
+}
+function tide(){
+ let pos=0,dir=1,z=5+R(60);
+ show('💎','Baú na Maré','Toque quando a luz estiver na faixa dourada.<div id="tb"><i id="tz"></i><b id="tp"></b></div>',[['Agora! ✋',()=>{clearInterval(iv);pos>=z&&pos<=z+30?gold(14+P.depth*2,'O baú se abre!'):res('O baú se fecha. Só algas lá dentro.')},'go']]);
+ $('#tz').style.left=z+'%';
+ iv=setInterval(()=>{pos+=dir*1.8;if(pos>=100||pos<=0)dir*=-1;$('#tp').style.left=pos+'%'},16);
+}
+function shop(m=''){
+ const it=[['🧪 Poção +15 vida',8,()=>P.hp=Math.min(P.mhp,P.hp+15)],['🛢️ Óleo +6 luz',6,()=>P.luz=Math.min(P.mluz,P.luz+6)],['⚔️ Afiar arpão +2',15,()=>P.atk+=2],['🔮 Relíquia misteriosa',28,()=>{m=giveRelic()}]];
+ show('🏪','Mercador de Luz',(m||'Um peixe-lanterna de monóculo troca luz por pérolas.')+`<small>Você tem ${P.gold} 🪙</small>`,
+  it.map(([l,c,f])=>[`${l}<small>${c} 🪙</small>`,()=>{if(P.gold<c)return shop('Pérolas insuficientes.');P.gold-=c;m='Negócio fechado!';f();shop(m)}]).concat([['Sair ⬇️',next,'go']]));
+}
+const EV=[
+()=>['🔔','Sino Afogado','Um sino imenso balança sem vento. Cada badalada abre uma porta... ou chama algo.',[['Tocar',()=>R(2)?gold(10+P.depth*2,'Moedas jorram do badalo!'):fight()],['Deixar quieto',()=>res('Você segue em silêncio.')]]],
+()=>['🧜','Sereia de Vidro','Ela oferece uma relíquia em troca de 10 de vida. Seu sorriso racha como gelo.',[['Aceitar (-10 vida)',()=>{P.hp-=10;P.hp<=0?die():relic('A sereia se estilhaça e deixa algo.')}],['Recusar',()=>res('Ela se desfaz em bolhas.')]]],
+()=>['📚','Biblioteca Alagada','Livros flutuam como peixes. Um deles brilha.',[['Ler com calma (-3 luz)',()=>{P.luz=Math.max(0,P.luz-3);P.atk++;res('As letras queimam sua mente: <b>+1 ataque</b>.')}],['Folhear rápido',()=>{if(R(2)){P.luz=Math.min(P.mluz,P.luz+3);res('Uma página brilha: <b>+3 luz</b>.')}else{P.hp-=4;P.hp<=0?die():res('Papel afiado! -4 vida.')}}]]],
+()=>['🐙','Polvo Apostador','"Cara ou coroa de concha?" Ele aposta com oito mãos.',[['Apostar 10 pérolas',()=>P.gold<10?res('Você não tem pérolas suficientes.'):R(2)?gold(10,'Você venceu!'):(P.gold-=10,res('Perdeu 10 pérolas.'))],['Recusar',()=>res('O polvo dá de ombros (com quatro ombros).')]]],
+()=>['🪞','Espelho do Fundo','Seu reflexo pisca. Você não.',[['Quebrar (-5 vida)',()=>{P.hp-=5;P.hp<=0?die():gold(18+P.depth,'Cacos de prata viram pérolas.')}],['Encarar',()=>{P.mhp+=4;P.hp+=4;res('Seu reflexo acena. <b>+4 vida máxima</b>.')}]]],
+()=>['🕯️','Altar de Lanternas','Velas negras ardem sob a água. Uma delas pede tributo.',[['Oferecer 6 pérolas',()=>P.gold<6?res('O altar não aceita vento.'):(P.gold-=6,P.luz=Math.min(P.mluz,P.luz+7),res('As chamas dançam: <b>+7 luz</b>.'))],['Rezar',()=>R(3)?res('Nada acontece. Mas é bonito.'):relic('Uma vela cai aos seus pés.')]]],
+()=>['🧟','Náufrago Sorridente','Ele entrega uma caixa. Dentes demais no sorriso.',[['Aceitar',()=>R(3)?gold(15+P.depth,'Dentro: pérolas!'):fight()],['Cumprimentar',()=>{P.hp=Math.min(P.mhp,P.hp+6);res('Ele chora de gratidão e te cura: <b>+6 vida</b>.')}]]],
+()=>['⏳','Cardume de Relógios','Peixes-relógio nadam em ordem. Um deles está atrasado.',[['Seguir o atrasado',()=>{P.luz=Math.min(P.mluz,P.luz+4);P.hp=Math.min(P.mhp,P.hp+4);res('O tempo dobra: <b>+4 vida e +4 luz</b>.')}],['Roubar um relógio',()=>R(2)?gold(20,'Vendido por um bom preço!'):fight()]]]];
+function ev(){const[a,t,x,b]=pick(EV)();show(a,t,x,b.map(([l,f])=>[l,f]))}
+
+function fight(boss){
+ const d=P.depth,[n,em]=pick(EN);
+ const e=boss?{n:'Leviatã Adormecido',e:'🐋',hp:120,atk:9,g:60}:{n,e:em,hp:14+d*5+R(6),atk:3+Math.floor(d*.9),g:4+d+R(6)};
+ e.mhp=e.hp;e.t=0;let stun=0,guard=0,cancel=false;
+ const heavy=()=>e.t%3==2;
+ const view=m=>show(e.e,`${e.n} — ${e.hp}/${e.mhp}`,(m?m+'<br>':'')+(stun?'😴 Imóvel.':heavy()?'<b style="color:#ff6b6b">⚠️ Vai desferir um golpe pesado!</b>':'Prepara um ataque.'),[
+  ['🗡️ Atacar',()=>act('a')],['💡 Clarão<small>-2 luz</small>',()=>act('l')],
+  [`✨ ${CL[P.k].sk}<small>${P.cd?'espera '+P.cd:CL[P.k].d}</small>`,()=>act('s'),P.cd?'dim':'go'],['🛡️ Defender',()=>act('d')],['🏃 Fugir',()=>act('f')]]);
+ function hit(x){if(P.crit&&Math.random()<P.crit){x*=2;return[x,' CRÍTICO!']}return[x,'']}
+ function act(k){
+  let m='';
+  if(k=='a'){const[x,c]=hit(P.atk+R(4));e.hp-=x;m=`Você golpeia: -${x}.${c}`}
+  if(k=='l'){if(P.luz<2)return view('Luz insuficiente.');P.luz-=2;const[x,c]=hit(6+Math.floor(d/2)+Math.floor(P.atk/2));e.hp-=x;m=`💡 A luz queima: -${x}.${c}`}
+  if(k=='d'){guard=1;m='Você se encolhe atrás da lanterna.'}
+  if(k=='f'){if(R(2)){const l=Math.min(5,P.gold);P.gold-=l;return boss?view('Não há como fugir do Leviatã!'):res(`Você escapa, perdendo ${l} pérolas.`,'Fuga!')}m='A fuga falhou!'}
+  if(k=='s'){if(P.cd)return view('Habilidade em descanso.');P.cd=4;
+   if(P.k=='lan'){e.hp-=8;stun=1;m='☀️ Clarão! -8 e o inimigo fica atordoado.'}
+   if(P.k=='can'){stun=1;P.hp=Math.min(P.mhp,P.hp+5);m='🐚 Canção: o inimigo dorme. +5 vida.'}
+   if(P.k=='rel'){cancel=true;P.hp=Math.min(P.mhp,P.hp+8);m='⏳ Você rebobina o tempo. +8 vida.'}}
+  if(e.hp<=0)return win();
+  const hv=heavy();
+  if(stun){stun--;m+=` ${e.n} está imóvel.`}
+  else if(cancel){cancel=false;m+=' O golpe inimigo se desfaz no tempo.'}
+  else{let x=e.atk+R(3);if(hv)x*=2;if(guard)x=Math.ceil(x/2);x=Math.max(1,x-P.def);P.hp-=x;m+=` ${e.n} ${hv?'desfere um GOLPE PESADO':'ataca'}: -${x} vida.`}
+  guard=0;e.t++;if(P.cd&&k!='s')P.cd--;
+  if(P.hp<=0)return die();
+  view(m);
+ }
+ function win(){
+  const g=Math.round(e.g*P.gm);P.gold+=g;
+  if(boss)return show('🌅','A Luz Retorna',`O Leviatã se desfaz em milhares de bolhas douradas, e o mar de vidro volta a ser água. A cidade de relógios volta a bater.<br><b>Você venceu com ${P.gold} pérolas!</b>`,[['Jogar novamente 🏮',menu,'go']]);
+  let m=`${e.n} é derrotado! <b>+${g} pérolas.</b>`;
+  if(R(5)==0)m+=' '+giveRelic();
+  show('✨','Vitória',m,[['Seguir mais fundo ⬇️',next,'go']]);
+ }
+ view(boss?'O Leviatã desperta.':`${e.n} surge da escuridão!`);
+}
+menu();
+</script>
+</body>
+</html>
